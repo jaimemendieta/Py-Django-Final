@@ -1,11 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import datetime
+
+
+def parse_time(time_str):
+    return datetime.datetime.strptime(time_str, '%I:%M %p').time()
 
 
 def scrape_page(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
+
+    business_hours = []
 
     business_name_tag = soup.find('h1', class_='css-1se8maq')
     business_name = business_name_tag.text if business_name_tag else 'N/A'
@@ -46,6 +53,29 @@ def scrape_page(url):
     else:
         address_line1, address_line2, city, state, zip_code = 'N/A', 'N/A', 'N/A', 'N/A', 'N/A'
 
+    menu_section = soup.find('h2', string='Menu')
+    menu_tag = menu_section.find_next('a', class_='css-1trqlu6') if menu_section else None
+    menu_url = menu_tag['href'] if menu_tag else 'N/A'
+
+    # Business Hours
+    for row in soup.find_all('tr', class_='css-29kerx'):
+        th = row.find('th')
+        if th:
+            day = th.get_text().strip()
+            times = row.find('td').find_all('p', class_='no-wrap__09f24__c3plq')
+
+            for time_period in times:
+                time_str = time_period.get_text().strip()
+                if time_str.lower() != 'closed':
+                    opening_time, closing_time = time_str.split(' - ')
+                    opening_time = parse_time(opening_time)
+                    closing_time = parse_time(closing_time)
+                    business_hours.append({
+                        'day': day,
+                        'opening_time': opening_time,
+                        'closing_time': closing_time
+                    })
+
     return {
         'business_name': business_name,
         'category': category,
@@ -57,10 +87,12 @@ def scrape_page(url):
         'address_line2': address_line2,
         'city': city,
         'state': state,
-        'zip_code': zip_code
+        'zip_code': zip_code,
+        'menu_url': menu_url,
+        'business_hours': business_hours
     }
 
 
-url = 'https://www.yelp.com/biz/da-andrea-greenwich-village-new-york?osq=italian'
+url = 'https://www.yelp.com/biz/sicilia-mia-salt-lake-city?osq=Italian+Food'
 data = scrape_page(url)
 print(data)
