@@ -2,6 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import datetime
+from selenium import webdriver
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
 
 
 def parse_time(time_str):
@@ -11,8 +17,33 @@ def parse_time(time_str):
 def scrape_page(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
+    driver_path = './tools/geckodriver.exe'
+    service = Service(driver_path)
+    driver = webdriver.Firefox(service=service)
+    driver.get(url)
 
     business_hours = []
+
+    amenities_dict = {
+        'offers_delivery': False,
+        'offers_takeout': False,
+        'offers_catering': False,
+        'reservations': False,
+        'accepts_credit_cards': False,
+        'accepts_cash': False,
+        'accepts_android_pay': False,
+        'accepts_apple_pay': False,
+        'private_parking': False,
+        'waiter_service': False,
+        'free_wifi': False,
+        'full_bar': False,
+        'wheelchair_accessible': False,
+        'tv': False,
+        'open_to_all': False,
+        'outdoor_seating': False,
+        'dogs_allowed': False,
+        'bike_parking': False
+    }
 
     business_name_tag = soup.find('h1', class_='css-1se8maq')
     business_name = business_name_tag.text if business_name_tag else 'N/A'
@@ -33,6 +64,7 @@ def scrape_page(url):
     phone_area_code = phone_full[1:4] if phone_full != 'N/A' else 'N/A'
     phone_number = phone_full[6:].replace(' ', '') if phone_full != 'N/A' else 'N/A'
 
+    # Address Section (might need to change this to get it from the hours and location section)
     address_section = soup.find('p', string=lambda t: t and 'Get Directions' in t)
     address_tag = address_section.find_next('p', class_='css-qyp8bo') if address_section else None
     address_full = address_tag.text.strip() if address_tag else 'N/A'
@@ -76,6 +108,69 @@ def scrape_page(url):
                         'closing_time': closing_time
                     })
 
+    # Amenities
+    amenities_section = WebDriverWait(driver, 10).until(
+    EC.presence_of_element_located((By.XPATH, "//section[@aria-label='Amenities and More']"))
+    )
+
+    expand_button = amenities_section.find_element(By.CSS_SELECTOR, 'button[data-activated="false"]')
+    expand_button.click()
+
+    WebDriverWait(driver, 10).until(
+        lambda d: expand_button.get_attribute("aria-expanded") == "true"
+    )
+
+    html = driver.page_source
+    driver.quit()
+
+    soup2 = BeautifulSoup(html, 'html.parser')
+
+    amenities_section = soup2.find('section', {'aria-label': 'Amenities and More'})
+    if amenities_section:
+        amenities_items = amenities_section.find_all('div', class_='arrange-unit__09f24__rqHTg css-1qn0b6x')
+        for item in amenities_items:
+            icon = item.find('span', class_='icon--24-close-v2')
+            print(icon is None)
+            amenity_text = item.find('span', class_='css-1p9ibgf')
+            if amenity_text:
+                text = amenity_text.get_text().strip().lower()
+                print(text)
+                if 'delivery' in text:
+                    amenities_dict['offers_delivery'] = icon is None
+                elif 'takeout' in text:
+                    amenities_dict['offers_takeout'] = icon is None
+                elif 'offers catering' in text:
+                    amenities_dict['offers_catering'] = icon is None
+                elif 'reservations' in text:
+                    amenities_dict['reservations'] = icon is None
+                elif 'credit cards' in text:
+                    amenities_dict['accepts_credit_cards'] = icon is None
+                elif 'cash' in text:
+                    amenities_dict['accepts_cash'] = icon is None
+                elif 'android pay' in text:
+                    amenities_dict['accepts_android_pay'] = icon is None
+                elif 'apple pay' in text:
+                    amenities_dict['accepts_apple_pay'] = icon is None
+                elif 'lot parking' in text:
+                    amenities_dict['private_parking'] = icon is None
+                elif 'waiter service' in text:
+                    amenities_dict['waiter_service'] = icon is None
+                elif 'wi-fi' in text:
+                    amenities_dict['free_wifi'] = icon is None
+                elif 'bar' in text:
+                    amenities_dict['full_bar'] = icon is None
+                elif 'wheelchair' in text:
+                    amenities_dict['wheelchair_accessible'] = icon is None
+                elif 'tv' in text:
+                    amenities_dict['tv'] = icon is None
+                elif 'open to all' in text:
+                    amenities_dict['open_to_all'] = icon is None
+                elif 'outdoor seating' in text:
+                    amenities_dict['outdoor_seating'] = icon is None
+                elif 'dogs' in text:
+                    amenities_dict['dogs_allowed'] = icon is None
+                elif 'bike parking' in text:
+                    amenities_dict['bike_parking'] = icon is None
     return {
         'business_name': business_name,
         'category': category,
@@ -89,10 +184,11 @@ def scrape_page(url):
         'state': state,
         'zip_code': zip_code,
         'menu_url': menu_url,
-        'business_hours': business_hours
+        'business_hours': business_hours,
+        'amenities': amenities_dict
     }
 
 
-url = 'https://www.yelp.com/biz/sicilia-mia-salt-lake-city?osq=Italian+Food'
+url = 'https://www.yelp.com/biz/da-andrea-greenwich-village-new-york?osq=italian'
 data = scrape_page(url)
 print(data)

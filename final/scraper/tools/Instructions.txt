@@ -1,0 +1,3 @@
+Download the appropriate driver for your system
+and replace the win64 version that's in this project.
+https://github.com/mozilla/geckodriver/releases
