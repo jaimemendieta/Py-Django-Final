@@ -108,7 +108,7 @@ def scrape_page(url):
                         'closing_time': closing_time
                     })
 
-    # Amenities
+    # Amenities & About
     amenities_section = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.XPATH, "//section[@aria-label='Amenities and More']"))
     )
@@ -118,6 +118,17 @@ def scrape_page(url):
 
     WebDriverWait(driver, 10).until(
         lambda d: expand_button.get_attribute("aria-expanded") == "true"
+    )
+
+    about_section = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//section[@aria-label='About the Business']"))
+    )
+
+    read_more_button = about_section.find_element(By.CSS_SELECTOR, 'button[data-activated="false"]')
+    read_more_button.click()
+
+    WebDriverWait(driver, 10).until(
+    EC.presence_of_element_located((By.XPATH, "//div[@aria-modal='true']"))
     )
 
     html = driver.page_source
@@ -130,11 +141,9 @@ def scrape_page(url):
         amenities_items = amenities_section.find_all('div', class_='arrange-unit__09f24__rqHTg css-1qn0b6x')
         for item in amenities_items:
             icon = item.find('span', class_='icon--24-close-v2')
-            print(icon is None)
             amenity_text = item.find('span', class_='css-1p9ibgf')
             if amenity_text:
                 text = amenity_text.get_text().strip().lower()
-                print(text)
                 if 'delivery' in text:
                     amenities_dict['offers_delivery'] = icon is None
                 elif 'takeout' in text:
@@ -171,6 +180,12 @@ def scrape_page(url):
                     amenities_dict['dogs_allowed'] = icon is None
                 elif 'bike parking' in text:
                     amenities_dict['bike_parking'] = icon is None
+
+    # About text fetch
+    about_modal_section = soup2.find('div', {'id': 'modal-portal-container'})
+    if about_modal_section:
+        about_text = about_modal_section.find('p').text.strip()
+
     return {
         'business_name': business_name,
         'category': category,
@@ -185,7 +200,8 @@ def scrape_page(url):
         'zip_code': zip_code,
         'menu_url': menu_url,
         'business_hours': business_hours,
-        'amenities': amenities_dict
+        'amenities': amenities_dict,
+        'about': about_text
     }
 
 
