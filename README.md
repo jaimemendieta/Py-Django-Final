@@ -1,3 +1,6 @@
 # Py-Django-Final
 Final Project for CS 3620 Server-Side Architecture
-(In Progress)
+--(In Progress)
+
+## Selenium and WebDriver
+--To access elements from a dynamic web page
