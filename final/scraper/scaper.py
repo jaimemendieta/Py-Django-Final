@@ -24,6 +24,8 @@ def scrape_page(url):
 
     business_hours = []
 
+    reviews = []
+
     amenities_dict = {
         'offers_delivery': False,
         'offers_takeout': False,
@@ -110,7 +112,7 @@ def scrape_page(url):
 
     # Amenities & About
     amenities_section = WebDriverWait(driver, 10).until(
-    EC.presence_of_element_located((By.XPATH, "//section[@aria-label='Amenities and More']"))
+        EC.presence_of_element_located((By.XPATH, "//section[@aria-label='Amenities and More']"))
     )
 
     expand_button = amenities_section.find_element(By.CSS_SELECTOR, 'button[data-activated="false"]')
@@ -128,7 +130,7 @@ def scrape_page(url):
     read_more_button.click()
 
     WebDriverWait(driver, 10).until(
-    EC.presence_of_element_located((By.XPATH, "//div[@aria-modal='true']"))
+        EC.presence_of_element_located((By.XPATH, "//div[@aria-modal='true']"))
     )
 
     html = driver.page_source
@@ -186,7 +188,69 @@ def scrape_page(url):
     if about_modal_section:
         about_text = about_modal_section.find('p').text.strip()
 
-    return {
+    # Comments
+    reviews_section = soup2.find('section', {'aria-label': 'Recommended Reviews'})
+    reviews_ul = reviews_section.find('ul', class_='list__09f24__ynIEd')
+    if reviews_section:
+        for review in reviews_ul.find_all('li', class_='css-1q2nwpv'):
+            # Extract user information
+            user_name = review.find('a', class_='css-19v1rkv').get_text(strip=True) if review.find('a', class_='css-19v1rkv') else None
+            user_location = review.find('span', class_='css-qgunke').get_text(strip=True) if review.find('span',
+                                                                                               class_='css-qgunke') else None
+            # User Stats
+            stats = review.find_all('span', class_='css-1fnccdf')
+            user_friends = int(stats[0].get_text()) if len(stats) > 0 else 0
+            user_reviews = int(stats[1].get_text()) if len(stats) > 1 else 0
+            user_photos = int(stats[2].get_text()) if len(stats) > 2 else 0
+
+            # Extract rating
+            rating_element = review.find('div', class_='css-14g69b3')
+            user_rating = None
+            if rating_element:
+                aria_label = rating_element.get('aria-label', '')
+                rating_match = re.search(r'(\d+)', aria_label)
+                if rating_match:
+                    user_rating = int(rating_match.group(1))
+
+            # Extract comment
+            user_comment = review.find('p', class_='comment__09f24__D0cxf').get_text(strip=True) if review.find('p', class_='comment__09f24__D0cxf') else None
+
+            # Extract reactions
+            reactions = {'Useful': 0, 'Funny': 0, 'Cool': 0}
+
+            for reaction_type in reactions.keys():
+                button = review.find('span', string=reaction_type)
+
+                if button:
+                    parent_button = button.find_parent('button')
+
+                    if parent_button:
+                        count_span = parent_button.find('span', class_='css-1lr1m88')
+
+                        if count_span:
+                            try:
+                                reactions[reaction_type] = int(count_span.get_text(strip=True))
+                            except ValueError:
+                                print(f"Error parsing count for {reaction_type}: {count_span.get_text(strip=True)}")
+                        else:
+                            print(f"No count span found for {reaction_type}")
+                else:
+                    print(f"No button found for {reaction_type}")
+
+            # Add review data to reviews list
+            review_data = {
+                'user_name': user_name,
+                'user_location': user_location,
+                'user_friends': user_friends,
+                'user_reviews': user_reviews,
+                'user_photos': user_photos,
+                'user_rating': user_rating,
+                'user_comment': user_comment,
+                'reactions': reactions
+            }
+            reviews.append(review_data)
+
+    data_out = {
         'business_name': business_name,
         'category': category,
         'rating': rating,
@@ -201,8 +265,14 @@ def scrape_page(url):
         'menu_url': menu_url,
         'business_hours': business_hours,
         'amenities': amenities_dict,
-        'about': about_text
+        'about': about_text,
+        'reviews': reviews
     }
+
+    for key, value in data_out.items():
+        print(f"{key}: {value}\n")
+
+    return
 
 
 url = 'https://www.yelp.com/biz/da-andrea-greenwich-village-new-york?osq=italian'
