@@ -14,6 +14,12 @@ def parse_time(time_str):
     return datetime.datetime.strptime(time_str, '%I:%M %p').time()
 
 
+def parse_date(date_str):
+    date_obj = datetime.datetime.strptime(date_str, '%b %d, %Y')
+    iso_date_str = date_obj.strftime('%Y-%m-%d')
+    return iso_date_str
+
+
 def scrape_page(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -133,6 +139,10 @@ def scrape_page(url):
         EC.presence_of_element_located((By.XPATH, "//div[@aria-modal='true']"))
     )
 
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, "ul.list__09f24__ynIEd"))
+    )
+
     html = driver.page_source
     driver.quit()
 
@@ -197,6 +207,10 @@ def scrape_page(url):
             user_name = review.find('a', class_='css-19v1rkv').get_text(strip=True) if review.find('a', class_='css-19v1rkv') else None
             user_location = review.find('span', class_='css-qgunke').get_text(strip=True) if review.find('span',
                                                                                                class_='css-qgunke') else None
+            date_str = review.find('span', class_='css-chan6m').get_text(strip=True) if review.find('span', class_='css-chan6m') else None
+            if date_str:
+                comment_date = parse_date(date_str)
+
             # User Stats
             stats = review.find_all('span', class_='css-1fnccdf')
             user_friends = int(stats[0].get_text()) if len(stats) > 0 else 0
@@ -235,6 +249,7 @@ def scrape_page(url):
             review_data = {
                 'user_name': user_name,
                 'user_location': user_location,
+                'comment_date': comment_date,
                 'user_friends': user_friends,
                 'user_reviews': user_reviews,
                 'user_photos': user_photos,

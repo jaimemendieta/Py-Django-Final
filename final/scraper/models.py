@@ -44,6 +44,7 @@ class Comment(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
     user_name = models.CharField(max_length=100)
     user_location = models.CharField(max_length=255)
+    comment_date = models.DateField(null=True)
     user_follower_count = models.IntegerField(default=0)
     user_review_count = models.IntegerField(default=0)
     user_photo_count = models.IntegerField(default=0)
