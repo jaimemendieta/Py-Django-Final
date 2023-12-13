@@ -216,26 +216,20 @@ def scrape_page(url):
             user_comment = review.find('p', class_='comment__09f24__D0cxf').get_text(strip=True) if review.find('p', class_='comment__09f24__D0cxf') else None
 
             # Extract reactions
-            reactions = {'Useful': 0, 'Funny': 0, 'Cool': 0}
+            reactions = {}
 
-            for reaction_type in reactions.keys():
-                button = review.find('span', string=reaction_type)
-
-                if button:
-                    parent_button = button.find_parent('button')
-
-                    if parent_button:
-                        count_span = parent_button.find('span', class_='css-1lr1m88')
-
-                        if count_span:
-                            try:
-                                reactions[reaction_type] = int(count_span.get_text(strip=True))
-                            except ValueError:
-                                print(f"Error parsing count for {reaction_type}: {count_span.get_text(strip=True)}")
-                        else:
-                            print(f"No count span found for {reaction_type}")
+            for reaction_type, icon_class in [('useful', 'icon--16-useful-v2'), ('funny', 'icon--16-funny-v2'),
+                                              ('cool', 'icon--16-cool-v2')]:
+                reaction_span = review.find('span', class_=icon_class).find_parent('span', class_='css-inq9gi')
+                if reaction_span:
+                    # Check if span with class 'css-1lr1m88' exists within parent span
+                    reaction_count_span = reaction_span.find('span', class_='css-1lr1m88')
+                    if reaction_count_span:
+                        reactions[reaction_type] = int(reaction_count_span.get_text(strip=True))
+                    else:
+                        reactions[reaction_type] = 0
                 else:
-                    print(f"No button found for {reaction_type}")
+                    reactions[reaction_type] = 0
 
             # Add review data to reviews list
             review_data = {
@@ -266,15 +260,19 @@ def scrape_page(url):
         'business_hours': business_hours,
         'amenities': amenities_dict,
         'about': about_text,
-        'reviews': reviews
     }
 
     for key, value in data_out.items():
         print(f"{key}: {value}\n")
+
+    for review in reviews:
+        for key, value in review.items():
+            print(f"{key}: {value}")
+        print()
 
     return
 
 
 url = 'https://www.yelp.com/biz/da-andrea-greenwich-village-new-york?osq=italian'
 data = scrape_page(url)
-print(data)
+
