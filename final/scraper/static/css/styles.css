@@ -78,13 +78,36 @@ em {
     font-style: normal;
 }
 
+a {
+    color: var(--secondary-color);
+    overflow-wrap: break-word;
+}
+
+li {
+    color: #f8f8f8;
+    font-size: var(--font-med);
+}
+
+li:not(:last-child) {
+    padding-bottom: 1.5em;
+}
+
+li::marker {
+    content: none;
+}
+
 .section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      background-color: var(--main-background);
-      overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    width: 100%;
+    background-color: var(--main-background);
+    overflow: hidden;
+}
+
+.content {
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .app-header {
@@ -125,6 +148,16 @@ em {
     background-attachment: scroll;
     background-position: center;
     overflow: hidden;
+}
+
+.display-section {
+    display: flex;
+    width: 100%;
+    padding: 5em;
+}
+
+.display-section p {
+    max-width: 1000px;
 }
 
 .container__hero {

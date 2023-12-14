@@ -19,12 +19,16 @@
 
 <main>
     <section class="section">
-        <h1>{{ business.name }}</h1>
-        <p><em>Category:</em> {{ business.category }}</p>
-        <p><em>Rating:</em> {{ business.rating }}</p>
+        <div class="content">
+            <h1>{{ business.name }}</h1>
+            <p><em>Category:</em> {{ business.category }}</p>
+            <p><em>Rating:</em> {{ business.rating }}</p>
+        </div>
+
     </section>
 
-    <section class="section">
+    <section class="section display-section">
+    <div class="content">
         <p><em>Address:</em> {{ business.address_line1 }}, {{ business.city }}, {{ business.state }} {{ business.zip_code }}</p>
         <p><em>Phone:</em> ({{ business.phone_area_code }}) {{ business.phone_number }}</p>
         <p><em>Website:</em> <a href="{{ business.website_url }}">{{ business.website_url }}</a></p>
@@ -53,6 +57,7 @@
         {% empty %}
             <p>No comments available.</p>
         {% endfor %}
+    </div>
     </section>
 </main>
 </body>
