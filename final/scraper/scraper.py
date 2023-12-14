@@ -288,6 +288,4 @@ def scrape_page(url):
     return
 
 
-url = 'https://www.yelp.com/biz/da-andrea-greenwich-village-new-york?osq=italian'
-data = scrape_page(url)
 
