@@ -147,6 +147,7 @@ li::marker {
     background-size: cover;
     background-attachment: scroll;
     background-position: center;
+    align-items: center;
     overflow: hidden;
 }
 
