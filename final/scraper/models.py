@@ -39,7 +39,6 @@ class Business(models.Model):
         return self.name
 
 
-# TODO add date of comment
 class Comment(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
     user_name = models.CharField(max_length=100)

@@ -9,13 +9,19 @@ def home(request):
         form = YelpURLForm(request.POST)
         if form.is_valid():
             url = form.cleaned_data['yelp_url']
-            scrape_page(url)
-            return redirect('display_view')
+            business = scrape_page(url)
+            return redirect('display_view', pk=business.pk)
     else:
         form = YelpURLForm()
     return render(request, 'home.html', {'form': form})
 
 
-def display_view(request):
-    businesses = Business.objects.prefetch_related('business_hours').all()
-    return render(request, 'display_data.html', {'businesses': businesses})
+def display_view(request, pk):
+    business = Business.objects.get(pk=pk)
+    comments = Comment.objects.filter(businesses=business)
+    business_hours = BusinessHour.objects.filter(business=business)
+    return render(request, 'display_data.html', {
+        'business': business,
+        'comments': comments,
+        'business_hours': business_hours
+    })
