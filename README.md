@@ -13,3 +13,6 @@ This project uses Firefox's gecko driver. For the application to work make sure 
 Get latests version here: https://github.com/mozilla/geckodriver/releases
 
 Selenium is used to access elements from a dynamic web page
+
+## Demo
+![Scraper Demo](py-final.gif)
