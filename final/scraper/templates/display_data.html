@@ -11,7 +11,7 @@
     <h1>{{ business.name }}</h1>
     <p><strong>Category:</strong> {{ business.category }}</p>
     <p><strong>Rating:</strong> {{ business.rating }}</p>
-    <p><strong>Address:</strong> {{ business.address_line1 }} {{ business.address_line2 }}, {{ business.city }}, {{ business.state }} {{ business.zip_code }}</p>
+    <p><strong>Address:</strong> {{ business.address_line1 }}, {{ business.city }}, {{ business.state }} {{ business.zip_code }}</p>
     <p><strong>Phone:</strong> ({{ business.phone_area_code }}) {{ business.phone_number }}</p>
     <p><strong>Website:</strong> <a href="{{ business.website_url }}">{{ business.website_url }}</a></p>
     <p><strong>Menu:</strong> <a href="{{ business.menu_url }}">{{ business.menu_url }}</a></p>
@@ -32,8 +32,8 @@
     {% for comment in comments %}
         <div>
             <p><strong>{{ comment.user_name }} from {{ comment.user_location }}</strong> ({{ comment.comment_date }})</p>
-            <p>Rating: {{ comment.rating }}</p>
-            <p>{{ comment.comment_text }}</p>
+            <p>Rating: {{ comment.user_rating }}</p>
+            <p>{{ comment.user_comment }}</p>
             <p>Useful: {{ comment.reactions_useful }}, Funny: {{ comment.reactions_funny }}, Cool: {{ comment.reactions_cool }}</p>
         </div>
     {% empty %}
