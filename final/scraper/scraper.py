@@ -290,7 +290,9 @@ def scrape_page(url):
                 user_photos=review_data['user_photos'],
                 user_rating=review_data['user_rating'],
                 user_comment=review_data['user_comment'],
-                reactions=review_data['reactions']
+                reactions_useful=review_data['reactions'].get('useful', 0),
+                reactions_funny=review_data['reactions'].get('funny', 0),
+                reactions_cool=review_data['reactions'].get('cool', 0)
             )
 
         business.name = business_name
