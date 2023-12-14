@@ -8,7 +8,7 @@ class Business(models.Model):
     menu_url = models.URLField(blank=True, null=True)
     website_url = models.URLField(blank=True, null=True)
     category = models.CharField(max_length=100)
-    rating = models.FloatField()
+    rating = models.FloatField(null=True)
     address_line1 = models.CharField(max_length=255)
     address_line2 = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100)

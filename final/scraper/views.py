@@ -18,7 +18,7 @@ def home(request):
 
 def display_view(request, pk):
     business = Business.objects.get(pk=pk)
-    comments = Comment.objects.filter(businesses=business)
+    comments = Comment.objects.filter(business=business)
     business_hours = BusinessHour.objects.filter(business=business)
     return render(request, 'display_data.html', {
         'business': business,

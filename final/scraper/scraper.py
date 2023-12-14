@@ -28,9 +28,9 @@ def scrape_page(url):
         # Business did not previously exist in database, scrape data for newly added business
         response = requests.get(url)
         soup = BeautifulSoup(response.content, 'html.parser')
-        driver_path = './tools/geckodriver.exe'
-        service = Service(driver_path)
-        driver = webdriver.Firefox(service=service)
+        # driver_path = './tools/geckodriver.exe'
+        # service = Service(driver_path)
+        driver = webdriver.Firefox()
         driver.get(url)
 
         business_hours = []
@@ -65,7 +65,14 @@ def scrape_page(url):
         category = next((tag.text for tag in category_tags if tag['href'].startswith('/search?find_desc=')), 'N/A')
 
         rating_tag = soup.find('span', class_='css-1fdy0l5')
-        rating = rating_tag.text.strip() if rating_tag else 'N/A'
+        if rating_tag:
+            rating_str = rating_tag.text.strip()
+            try:
+                rating = float(rating_str)
+            except ValueError:
+                rating = 0
+        else:
+            rating = 0
 
         website_section = soup.find('p', string='Business website')
         website_tag = website_section.find_next('a') if website_section else None
@@ -321,6 +328,4 @@ def scrape_page(url):
         business.save()
 
     return business
-
-
 

@@ -5,9 +5,39 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Display</title>
+    <title>{{ business.name }}</title>
 </head>
 <body>
-<h1>Display Page</h1>
+    <h1>{{ business.name }}</h1>
+    <p><strong>Category:</strong> {{ business.category }}</p>
+    <p><strong>Rating:</strong> {{ business.rating }}</p>
+    <p><strong>Address:</strong> {{ business.address_line1 }} {{ business.address_line2 }}, {{ business.city }}, {{ business.state }} {{ business.zip_code }}</p>
+    <p><strong>Phone:</strong> ({{ business.phone_area_code }}) {{ business.phone_number }}</p>
+    <p><strong>Website:</strong> <a href="{{ business.website_url }}">{{ business.website_url }}</a></p>
+    <p><strong>Menu:</strong> <a href="{{ business.menu_url }}">{{ business.menu_url }}</a></p>
+
+    <h2>About the Business</h2>
+    <p>{{ business.about_text }}</p>
+
+    <h2>Business Hours</h2>
+    <ul>
+        {% for hour in business_hours %}
+            <li>{{ hour.day }}: {{ hour.opening_time }} - {{ hour.closing_time }}</li>
+        {% empty %}
+            <li>No business hours available.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Comments</h2>
+    {% for comment in comments %}
+        <div>
+            <p><strong>{{ comment.user_name }} from {{ comment.user_location }}</strong> ({{ comment.comment_date }})</p>
+            <p>Rating: {{ comment.rating }}</p>
+            <p>{{ comment.comment_text }}</p>
+            <p>Useful: {{ comment.reactions_useful }}, Funny: {{ comment.reactions_funny }}, Cool: {{ comment.reactions_cool }}</p>
+        </div>
+    {% empty %}
+        <p>No comments available.</p>
+    {% endfor %}
 </body>
 </html>
